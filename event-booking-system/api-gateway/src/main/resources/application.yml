@@ -1,0 +1,62 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # User Service Routes
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/v1/users/**, /api/v1/auth/**
+        # Movie Service Routes
+        - id: movie-service
+          uri: lb://movie-service
+          predicates:
+            - Path=/api/v1/movies/**, /api/v1/reviews/**
+        # Event Service Routes
+        - id: event-service
+          uri: lb://event-service
+          predicates:
+            - Path=/api/v1/events/**, /api/v1/showtimes/**
+        # Theatre Service Routes
+        - id: theatre-service
+          uri: lb://theatre-service
+          predicates:
+            - Path=/api/v1/theatres/**, /api/v1/screens/**
+        # Booking Service Routes
+        - id: booking-service
+          uri: lb://booking-service
+          predicates:
+            - Path=/api/v1/bookings/**
+        # Payment Service Routes
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/api/v1/payments/**
+        # Offer Service Routes
+        - id: offer-service
+          uri: lb://offer-service
+          predicates:
+            - Path=/api/v1/offers/**
+        # Notification Service Routes
+        - id: notification-service
+          uri: lb://notification-service
+          predicates:
+            - Path=/api/v1/notifications/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+# It is strongly recommended to use environment variables for secrets.
+# For example: jwt.secret=${JWT_SECRET}
+jwt:
+  secret: PLEASE_REPLACE_WITH_A_STRONG_SECRET_KEY
+  expiration: 86400000 # 24 hours
