@@ -1,7 +1,7 @@
 package com.eventbook.theatreservice.model;
 
 import lombok.Data;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "screens")

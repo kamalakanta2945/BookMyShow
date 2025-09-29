@@ -1,7 +1,7 @@
 package com.eventbook.movieservice.model;
 
 import lombok.Data;
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 

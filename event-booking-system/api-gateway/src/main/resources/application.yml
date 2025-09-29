@@ -7,11 +7,11 @@ spring:
   cloud:
     gateway:
       routes:
-        # User Service Routes
-        - id: user-service
-          uri: lb://user-service
+        # Auth Service Routes
+        - id: auth-service
+          uri: lb://auth-service
           predicates:
-            - Path=/api/v1/users/**, /api/v1/auth/**
+            - Path=/api/v1/auth/**
         # Movie Service Routes
         - id: movie-service
           uri: lb://movie-service
@@ -58,5 +58,5 @@ eureka:
 # It is strongly recommended to use environment variables for secrets.
 # For example: jwt.secret=${JWT_SECRET}
 jwt:
-  secret: PLEASE_REPLACE_WITH_A_STRONG_SECRET_KEY
+  secret: ${JWT_SECRET}
   expiration: 86400000 # 24 hours

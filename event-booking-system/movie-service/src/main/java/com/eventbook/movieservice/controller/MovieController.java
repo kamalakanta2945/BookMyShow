@@ -1,13 +1,18 @@
 package com.eventbook.movieservice.controller;
 
+import com.eventbook.common.dto.ApiResponse;
+import com.eventbook.common.exception.ResourceNotFoundException;
 import com.eventbook.movieservice.model.Movie;
 import com.eventbook.movieservice.service.MovieService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/movies")
@@ -17,44 +22,50 @@ public class MovieController {
     private MovieService movieService;
 
     @GetMapping
-    public List<Movie> getAllMovies() {
-        return movieService.findAllMovies();
+    public ResponseEntity<ApiResponse<Page<Movie>>> getAllMovies(Pageable pageable, @RequestParam(required = false) String searchTerm) {
+        Page<Movie> movies = movieService.findAllMovies(pageable, searchTerm);
+        return new ResponseEntity<>(new ApiResponse<>("Movies fetched successfully", movies), HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Movie> getMovieById(@PathVariable Long id) {
-        return movieService.findMovieById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ApiResponse<Movie>> getMovieById(@PathVariable Long id) {
+        Movie movie = movieService.findMovieById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Movie not found with id: " + id));
+        return new ResponseEntity<>(new ApiResponse<>("Movie fetched successfully", movie), HttpStatus.OK);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public Movie createMovie(@RequestBody Movie movie) {
-        return movieService.saveMovie(movie);
+    public ResponseEntity<ApiResponse<Movie>> createMovie(@Valid @RequestBody Movie movie) {
+        Movie createdMovie = movieService.saveMovie(movie);
+        return new ResponseEntity<>(new ApiResponse<>("Movie created successfully", createdMovie), HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody Movie movieDetails) {
-        try {
-            Movie updatedMovie = movieService.updateMovie(id, movieDetails);
-            return ResponseEntity.ok(updatedMovie);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ApiResponse<Movie>> updateMovie(@PathVariable Long id, @Valid @RequestBody Movie movieDetails) {
+        Movie updatedMovie = movieService.updateMovie(id, movieDetails);
+        return new ResponseEntity<>(new ApiResponse<>("Movie updated successfully", updatedMovie), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteMovie(@PathVariable Long id) {
-        try {
-            movieService.deleteMovie(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ApiResponse<Void>> deleteMovie(@PathVariable Long id) {
+        movieService.deleteMovie(id);
+        return new ResponseEntity<>(new ApiResponse<>("Movie deleted successfully"), HttpStatus.NO_CONTENT);
     }
 
-    // Additional endpoints for reviews can be added here
+    @PostMapping("/import")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> importMovies(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return new ResponseEntity<>(new ApiResponse<>("Please upload a non-empty Excel file.", null, false), HttpStatus.BAD_REQUEST);
+        }
+        try {
+            movieService.importMoviesFromExcel(file.getInputStream());
+            return new ResponseEntity<>(new ApiResponse<>("Movies imported successfully."), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(new ApiResponse<>("Failed to import movies: " + e.getMessage(), null, false), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
