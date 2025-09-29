@@ -5,9 +5,9 @@ import com.eventbook.movieservice.model.Review;
 import com.eventbook.movieservice.repository.MovieRepository;
 import com.eventbook.movieservice.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ReviewService {
@@ -18,8 +18,8 @@ public class ReviewService {
     @Autowired
     private MovieRepository movieRepository;
 
-    public List<Review> findReviewsByMovieId(Long movieId) {
-        return reviewRepository.findByMovieId(movieId);
+    public Page<Review> findReviewsByMovieId(Long movieId, Pageable pageable) {
+        return reviewRepository.findByMovieId(movieId, pageable);
     }
 
     public Review saveReview(Long movieId, Review review) {

@@ -5,10 +5,11 @@ import com.eventbook.offerservice.model.Offer;
 import com.eventbook.offerservice.repository.CouponRepository;
 import com.eventbook.offerservice.repository.OfferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,8 +22,8 @@ public class OfferService {
     private CouponRepository couponRepository;
 
     // Offer methods
-    public List<Offer> findAllOffers() {
-        return offerRepository.findAll();
+    public Page<Offer> findAllOffers(Pageable pageable) {
+        return offerRepository.findAll(pageable);
     }
 
     public Offer saveOffer(Offer offer) {
@@ -50,6 +51,10 @@ public class OfferService {
 
 
     // Coupon methods
+    public Page<Coupon> findAllCoupons(Pageable pageable) {
+        return couponRepository.findAll(pageable);
+    }
+
     public Optional<Coupon> findCouponByCode(String code) {
         return couponRepository.findByCode(code);
     }

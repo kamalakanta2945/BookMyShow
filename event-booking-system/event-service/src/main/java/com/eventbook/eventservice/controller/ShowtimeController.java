@@ -1,8 +1,11 @@
 package com.eventbook.eventservice.controller;
 
+import com.eventbook.common.dto.ApiResponse;
 import com.eventbook.eventservice.model.Showtime;
 import com.eventbook.eventservice.service.ShowtimeService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,32 +20,24 @@ public class ShowtimeController {
     private ShowtimeService showtimeService;
 
     @GetMapping
-    public List<Showtime> getShowtimesByEventId(@RequestParam Long eventId) {
-        return showtimeService.findShowtimesByEventId(eventId);
+    public ResponseEntity<ApiResponse<List<Showtime>>> getShowtimesByEventId(@RequestParam Long eventId) {
+        List<Showtime> showtimes = showtimeService.findShowtimesByEventId(eventId);
+        return new ResponseEntity<>(new ApiResponse<>("Showtimes fetched successfully", showtimes), HttpStatus.OK);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or @eventSecurityService.isOwner(authentication, #eventId)")
-    public ResponseEntity<Showtime> createShowtime(@RequestParam Long eventId, @RequestBody Showtime showtime) {
-        try {
-            Showtime savedShowtime = showtimeService.saveShowtime(eventId, showtime);
-            return ResponseEntity.ok(savedShowtime);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ApiResponse<Showtime>> createShowtime(@RequestParam Long eventId, @Valid @RequestBody Showtime showtime) {
+        Showtime savedShowtime = showtimeService.saveShowtime(eventId, showtime);
+        return new ResponseEntity<>(new ApiResponse<>("Showtime created successfully", savedShowtime), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or @eventSecurityService.isOwner(authentication, T(com.eventbook.eventservice.model.Showtime).#id)")
-    public ResponseEntity<Void> deleteShowtime(@PathVariable Long id) {
-        // Note: The ownership check for deletion is more complex. A real implementation
-        // would fetch the showtime, get its eventId, and then check ownership.
-        // This SpEL expression is a simplification and may need a helper method in EventSecurityService.
-        try {
-            showtimeService.deleteShowtime(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<ApiResponse<Void>> deleteShowtime(@PathVariable Long id) {
+        // Note: The ownership check for deletion is more complex.
+        // This is a simplified placeholder.
+        showtimeService.deleteShowtime(id);
+        return new ResponseEntity<>(new ApiResponse<>("Showtime deleted successfully"), HttpStatus.NO_CONTENT);
     }
 }

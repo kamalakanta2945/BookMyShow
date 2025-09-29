@@ -1,7 +1,7 @@
 package com.eventbook.bookingservice.model;
 
 import lombok.Data;
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "tickets")
